@@ -1,0 +1,186 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ContentType {
+  TEXT 
+  URL 
+  FILE 
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String? 
+
+  // Billing
+  isPro                Boolean @default(false)
+  stripeCustomerId     String? @unique
+  stripeSubscriptionId String? @unique
+
+  accounts    Account[]
+  sessions    Session[]
+  items       Item[]
+  itemTypes   ItemType[]
+  collections Collection[]
+  tags        Tag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Item {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  contentType ContentType
+
+  // TEXT
+  content  String? @db.Text
+  language String? 
+
+  // URL
+  url String?
+
+  // FILE (stored in Cloudflare R2)
+  fileUrl  String?
+  fileName String?
+  fileSize Int? // bytes
+
+  isFavorite Boolean   @default(false)
+  isPinned   Boolean   @default(false)
+  lastUsedAt DateTime?
+
+  userId     String
+  itemTypeId String
+
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemType    ItemType         @relation(fields: [itemTypeId], references: [id])
+  tags        Tag[]
+  collections ItemCollection[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, itemTypeId])
+  @@index([userId, isPinned])
+  @@index([userId, lastUsedAt])
+  @@map("items")
+}
+
+model ItemType {
+  id       String  @id @default(cuid())
+  name     String 
+  slug     String 
+  icon     String 
+  color    String 
+  isSystem Boolean @default(false)
+
+  userId String? 
+
+  user               User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items              Item[]
+  defaultCollections Collection[]
+
+  @@unique([userId, slug])
+  @@index([userId])
+  @@map("item_types")
+}
+
+model Collection {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  isFavorite  Boolean @default(false)
+
+  userId        String
+  defaultTypeId String? 
+
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  defaultType ItemType?        @relation(fields: [defaultTypeId], references: [id])
+  items       ItemCollection[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("collections")
+}
+
+model ItemCollection {
+  itemId       String
+  collectionId String
+  addedAt      DateTime @default(now())
+
+  item       Item       @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@id([itemId, collectionId])
+  @@index([collectionId])
+  @@map("item_collections")
+}
+
+model Tag {
+  id     String @id @default(cuid())
+  name   String
+  userId String
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items Item[]
+
+  @@unique([userId, name])
+  @@map("tags")
+}
