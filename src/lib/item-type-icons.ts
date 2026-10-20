@@ -9,7 +9,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-const ITEM_TYPE_ICONS: Record<string, LucideIcon> = {
+export const DEFAULT_ITEM_TYPE_ICON: LucideIcon = FileIcon;
+
+export const ITEM_TYPE_ICONS: Record<string, LucideIcon> = {
   Code: CodeIcon,
   Sparkles: SparklesIcon,
   StickyNote: StickyNoteIcon,
@@ -18,7 +20,3 @@ const ITEM_TYPE_ICONS: Record<string, LucideIcon> = {
   File: FileIcon,
   Image: ImageIcon,
 };
-
-export function getItemTypeIcon(iconName: string): LucideIcon {
-  return ITEM_TYPE_ICONS[iconName] ?? FileIcon;
-}
