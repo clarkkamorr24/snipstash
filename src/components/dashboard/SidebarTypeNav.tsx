@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ItemTypeIcon } from "@/components/dashboard/ItemTypeIcon";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -9,7 +10,6 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { formatTypeLabel, getItemTypesWithCounts } from "@/lib/dashboard-data";
-import { getItemTypeIcon } from "@/lib/item-type-icons";
 
 export function SidebarTypeNav() {
   const typesWithCounts = getItemTypesWithCounts();
@@ -21,7 +21,6 @@ export function SidebarTypeNav() {
       </SidebarGroupLabel>
       <SidebarMenu>
         {typesWithCounts.map(({ type, count }) => {
-          const Icon = getItemTypeIcon(type.icon);
           const label = formatTypeLabel(type);
 
           return (
@@ -30,7 +29,7 @@ export function SidebarTypeNav() {
                 tooltip={label}
                 render={<Link href={`/items/${type.slug}`} />}
               >
-                <Icon color={type.color} />
+                <ItemTypeIcon icon={type.icon} color={type.color} />
                 <span>{label}</span>
               </SidebarMenuButton>
               <SidebarMenuBadge className="text-muted-foreground">

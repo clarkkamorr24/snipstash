@@ -48,7 +48,7 @@ export function AppSidebar() {
         />
         <SidebarCollectionNav
           label="Recent collections"
-          collections={getRecentCollections()}
+          collections={getRecentCollections({ excludeFavorites: true })}
           showViewAll
         />
       </SidebarContent>

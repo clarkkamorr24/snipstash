@@ -10,8 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getDominantItemType } from "@/lib/dashboard-data";
 import type { MockCollection } from "@/lib/mock-data";
-
-const FALLBACK_COLLECTION_COLOR = "#6b7280";
+import { FALLBACK_TYPE_COLOR } from "@/lib/type-color";
 
 interface SidebarCollectionNavProps {
   label: string;
@@ -36,7 +35,7 @@ export function SidebarCollectionNav({
       <SidebarMenu>
         {collections.map((collection) => {
           const color =
-            getDominantItemType(collection)?.color ?? FALLBACK_COLLECTION_COLOR;
+            getDominantItemType(collection)?.color ?? FALLBACK_TYPE_COLOR;
 
           return (
             <SidebarMenuItem key={collection.id}>
