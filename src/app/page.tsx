@@ -1,3 +1,3 @@
 export default function Home() {
-  return <div>codestash</div>;
+  return <div>snipstash</div>;
 }
