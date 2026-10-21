@@ -3,34 +3,37 @@ import { PinIcon } from "lucide-react";
 import { ItemTypeIcon } from "@/components/dashboard/ItemTypeIcon";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatTypeName, getItemType } from "@/lib/dashboard-data";
+import { formatTypeName } from "@/lib/dashboard-data";
+import type { DashboardItem } from "@/lib/db/items";
 import { formatShortDate } from "@/lib/format";
-import type { MockItem } from "@/lib/mock-data";
 import { typeColorVars } from "@/lib/type-color";
 
 interface ItemCardProps {
-  item: MockItem;
+  item: DashboardItem;
 }
 
-function getItemMeta(item: MockItem): string {
-  const source = item.url ? new URL(item.url).hostname : item.language;
+function getItemMeta(item: DashboardItem): string {
+  const source =
+    item.url && URL.canParse(item.url)
+      ? new URL(item.url).hostname
+      : item.language;
   const date = formatShortDate(item.lastUsedAt ?? item.createdAt);
   return source ? `${source} · ${date}` : date;
 }
 
 export function ItemCard({ item }: ItemCardProps) {
-  const type = getItemType(item.itemTypeId);
+  const type = item.itemType;
 
   return (
     <Card
-      style={typeColorVars(type?.color)}
+      style={typeColorVars(type.color)}
       className="h-full ring-(--type-color)/30 transition-shadow hover:ring-(--type-color)/60"
     >
       <CardContent className="flex h-full flex-col gap-3">
         <div className="flex items-center justify-between">
           <Badge className="rounded-md bg-(--type-color)/15 text-(--type-color)">
-            <ItemTypeIcon icon={type?.icon ?? ""} data-icon="inline-start" />
-            {type ? formatTypeName(type) : "Item"}
+            <ItemTypeIcon icon={type.icon} data-icon="inline-start" />
+            {formatTypeName(type)}
           </Badge>
           {item.isPinned && (
             <PinIcon aria-label="Pinned" className="size-4 text-amber-400" />

@@ -4,6 +4,6 @@ const SHORT_DATE_FORMAT = new Intl.DateTimeFormat("en-US", {
   timeZone: "UTC",
 });
 
-export function formatShortDate(isoDate: string): string {
-  return SHORT_DATE_FORMAT.format(new Date(isoDate));
+export function formatShortDate(date: Date): string {
+  return SHORT_DATE_FORMAT.format(date);
 }

@@ -8,7 +8,10 @@ import {
 
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { DashboardStats } from "@/lib/dashboard-data";
+import type { CollectionStats } from "@/lib/db/collections";
+import type { ItemStats } from "@/lib/db/items";
+
+export type DashboardStats = ItemStats & CollectionStats;
 
 interface StatCardConfig {
   key: keyof DashboardStats;

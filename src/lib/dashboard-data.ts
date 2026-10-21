@@ -8,18 +8,10 @@ import {
 } from "@/lib/mock-data";
 
 const RECENT_COLLECTIONS_LIMIT = 5;
-const RECENT_ITEMS_LIMIT = 10;
 
 export interface ItemTypeWithCount {
   type: MockItemType;
   count: number;
-}
-
-export interface DashboardStats {
-  totalItems: number;
-  totalCollections: number;
-  favoriteItems: number;
-  favoriteCollections: number;
 }
 
 interface RecentCollectionsOptions {
@@ -38,15 +30,6 @@ export function getItemTypesWithCounts(): ItemTypeWithCount[] {
   }));
 }
 
-export function getDashboardStats(): DashboardStats {
-  return {
-    totalItems: items.length,
-    totalCollections: collections.length,
-    favoriteItems: items.filter((item) => item.isFavorite).length,
-    favoriteCollections: collections.filter((c) => c.isFavorite).length,
-  };
-}
-
 export function getFavoriteCollections(): MockCollection[] {
   return collections.filter((collection) => collection.isFavorite);
 }
@@ -59,18 +42,6 @@ export function getRecentCollections({
     .filter((collection) => !excludeFavorites || !collection.isFavorite)
     .toSorted((a, b) => b.createdAt.localeCompare(a.createdAt))
     .slice(0, limit);
-}
-
-function byLastUsedDesc(a: MockItem, b: MockItem): number {
-  return (b.lastUsedAt ?? "").localeCompare(a.lastUsedAt ?? "");
-}
-
-export function getPinnedItems(): MockItem[] {
-  return items.filter((item) => item.isPinned).toSorted(byLastUsedDesc);
-}
-
-export function getRecentItems(limit = RECENT_ITEMS_LIMIT): MockItem[] {
-  return items.toSorted(byLastUsedDesc).slice(0, limit);
 }
 
 function getCollectionItems(collection: MockCollection): MockItem[] {
