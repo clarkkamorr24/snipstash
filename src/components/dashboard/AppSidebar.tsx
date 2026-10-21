@@ -1,7 +1,14 @@
 import Link from "next/link";
+import { Suspense } from "react";
 
-import { SidebarCollectionNav } from "@/components/dashboard/SidebarCollectionNav";
-import { SidebarTypeNav } from "@/components/dashboard/SidebarTypeNav";
+import {
+  SidebarCollections,
+  SidebarCollectionsSkeleton,
+} from "@/components/dashboard/SidebarCollections";
+import {
+  SidebarTypeNav,
+  SidebarTypeNavSkeleton,
+} from "@/components/dashboard/SidebarTypeNav";
 import { SidebarUserMenu } from "@/components/dashboard/SidebarUserMenu";
 import {
   Sidebar,
@@ -10,10 +17,6 @@ import {
   SidebarHeader,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import {
-  getFavoriteCollections,
-  getRecentCollections,
-} from "@/lib/dashboard-data";
 import { currentUser } from "@/lib/mock-data";
 
 function Logo() {
@@ -41,16 +44,12 @@ export function AppSidebar() {
         <SidebarTrigger className="text-muted-foreground" />
       </SidebarHeader>
       <SidebarContent>
-        <SidebarTypeNav />
-        <SidebarCollectionNav
-          label="Favorite collections"
-          collections={getFavoriteCollections()}
-        />
-        <SidebarCollectionNav
-          label="Recent collections"
-          collections={getRecentCollections({ excludeFavorites: true })}
-          showViewAll
-        />
+        <Suspense fallback={<SidebarTypeNavSkeleton />}>
+          <SidebarTypeNav />
+        </Suspense>
+        <Suspense fallback={<SidebarCollectionsSkeleton />}>
+          <SidebarCollections />
+        </Suspense>
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border">
         <SidebarUserMenu user={currentUser} />

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CircleIcon, FolderOpenIcon } from "lucide-react";
+import { CircleIcon, FolderOpenIcon, StarIcon } from "lucide-react";
 
 import {
   SidebarGroup,
@@ -8,13 +8,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { getDominantItemType } from "@/lib/dashboard-data";
-import type { MockCollection } from "@/lib/mock-data";
+import type { CollectionSummary } from "@/lib/db/collections";
 import { FALLBACK_TYPE_COLOR } from "@/lib/type-color";
 
 interface SidebarCollectionNavProps {
   label: string;
-  collections: MockCollection[];
+  collections: CollectionSummary[];
   showViewAll?: boolean;
 }
 
@@ -33,22 +32,25 @@ export function SidebarCollectionNav({
         {label}
       </SidebarGroupLabel>
       <SidebarMenu>
-        {collections.map((collection) => {
-          const color =
-            getDominantItemType(collection)?.color ?? FALLBACK_TYPE_COLOR;
-
-          return (
-            <SidebarMenuItem key={collection.id}>
-              <SidebarMenuButton
-                tooltip={collection.name}
-                render={<Link href={`/collections/${collection.id}`} />}
-              >
-                <CircleIcon fill={color} stroke="none" className="scale-50" />
-                <span>{collection.name}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          );
-        })}
+        {collections.map((collection) => (
+          <SidebarMenuItem key={collection.id}>
+            <SidebarMenuButton
+              tooltip={collection.name}
+              render={<Link href={`/collections/${collection.id}`} />}
+            >
+              {collection.isFavorite ? (
+                <StarIcon className="fill-amber-400 text-amber-400" />
+              ) : (
+                <CircleIcon
+                  fill={collection.dominantType?.color ?? FALLBACK_TYPE_COLOR}
+                  stroke="none"
+                  className="scale-50"
+                />
+              )}
+              <span>{collection.name}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))}
         {showViewAll && (
           <SidebarMenuItem>
             <SidebarMenuButton
