@@ -4,6 +4,7 @@ import { connection } from "next/server";
 
 import { ItemTypeIcon } from "@/components/dashboard/ItemTypeIcon";
 import { SidebarNavSkeleton } from "@/components/dashboard/SidebarNavSkeleton";
+import { Badge } from "@/components/ui/badge";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -12,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { formatTypeLabel } from "@/lib/dashboard-data";
+import { formatTypeLabel, isProType } from "@/lib/dashboard-data";
 import { getItemTypesWithCounts } from "@/lib/db/items";
 import { getCurrentUserId } from "@/lib/db/users";
 
@@ -51,7 +52,15 @@ export async function SidebarTypeNav() {
               render={<Link href={`/items/${type.slug}`} />}
             >
               <ItemTypeIcon icon={type.icon} color={type.color} />
-              <span>{label}</span>
+              <span className="truncate">{label}</span>
+              {isProType(type) && (
+                <Badge
+                  variant="outline"
+                  className="h-4 rounded-sm px-1 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase group-data-[collapsible=icon]:hidden"
+                >
+                  Pro
+                </Badge>
+              )}
             </SidebarMenuButton>
             <SidebarMenuBadge className="text-muted-foreground">
               {type.itemCount}
