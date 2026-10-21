@@ -73,7 +73,7 @@ export function getRecentItems(limit = RECENT_ITEMS_LIMIT): MockItem[] {
   return items.toSorted(byLastUsedDesc).slice(0, limit);
 }
 
-export function getCollectionItems(collection: MockCollection): MockItem[] {
+function getCollectionItems(collection: MockCollection): MockItem[] {
   return items.filter((item) => item.collectionIds.includes(collection.id));
 }
 
@@ -85,16 +85,6 @@ function countCollectionItemTypes(
     counts.set(item.itemTypeId, (counts.get(item.itemTypeId) ?? 0) + 1);
   }
   return counts;
-}
-
-// Distinct types in a collection, most common first.
-export function getCollectionItemTypes(
-  collection: MockCollection
-): MockItemType[] {
-  return [...countCollectionItemTypes(collection).entries()]
-    .toSorted(([, a], [, b]) => b - a)
-    .map(([typeId]) => getItemType(typeId))
-    .filter((type): type is MockItemType => type !== undefined);
 }
 
 // The type a collection holds the most of; ties keep the default type.
@@ -125,6 +115,6 @@ export function formatTypeLabel(type: MockItemType): string {
 }
 
 // Singular name, e.g. "Snippet".
-export function formatTypeName(type: MockItemType): string {
+export function formatTypeName(type: Pick<MockItemType, "name">): string {
   return capitalize(type.name);
 }

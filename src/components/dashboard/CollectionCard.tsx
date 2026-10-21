@@ -1,31 +1,18 @@
 import Link from "next/link";
-import {
-  ChevronRightIcon,
-  CircleIcon,
-  FolderIcon,
-  StarIcon,
-} from "lucide-react";
+import { ChevronRightIcon, FolderIcon, StarIcon } from "lucide-react";
 
 import { ItemTypeIcon } from "@/components/dashboard/ItemTypeIcon";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  getCollectionItems,
-  getCollectionItemTypes,
-  getDominantItemType,
-} from "@/lib/dashboard-data";
-import type { MockCollection } from "@/lib/mock-data";
+import { formatTypeName } from "@/lib/dashboard-data";
+import type { CollectionSummary } from "@/lib/db/collections";
 import { typeColorVars } from "@/lib/type-color";
 
-const MAX_TYPE_DOTS = 3;
-
 interface CollectionCardProps {
-  collection: MockCollection;
+  collection: CollectionSummary;
 }
 
 export function CollectionCard({ collection }: CollectionCardProps) {
-  const dominantType = getDominantItemType(collection);
-  const itemTypes = getCollectionItemTypes(collection).slice(0, MAX_TYPE_DOTS);
-  const itemCount = getCollectionItems(collection).length;
+  const { dominantType, itemCount, itemTypes } = collection;
 
   return (
     <Link
@@ -33,7 +20,7 @@ export function CollectionCard({ collection }: CollectionCardProps) {
       style={typeColorVars(dominantType?.color)}
       className="group/collection rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <Card className="h-full bg-linear-to-br from-(--type-color)/15 to-card transition-shadow group-hover/collection:ring-(--type-color)/40">
+      <Card className="h-full bg-linear-to-br from-(--type-color)/15 to-card ring-(--type-color)/30 transition-shadow group-hover/collection:ring-(--type-color)/60">
         <CardContent className="flex h-full flex-col gap-4">
           <div className="flex items-start justify-between">
             <span className="flex size-9 items-center justify-center rounded-lg bg-(--type-color)/15 text-(--type-color)">
@@ -61,17 +48,18 @@ export function CollectionCard({ collection }: CollectionCardProps) {
               </p>
             )}
           </div>
-          <div className="mt-auto flex items-center justify-between text-xs text-muted-foreground">
+          <div className="mt-auto flex items-center justify-between gap-2 text-xs text-muted-foreground">
             <span>
               {itemCount} {itemCount === 1 ? "item" : "items"}
             </span>
-            <div className="flex gap-1">
+            <div className="flex items-center gap-1.5">
               {itemTypes.map((type) => (
-                <CircleIcon
+                <ItemTypeIcon
                   key={type.id}
-                  fill={type.color}
-                  stroke="none"
-                  className="size-2.5"
+                  icon={type.icon}
+                  aria-label={formatTypeName(type)}
+                  style={typeColorVars(type.color)}
+                  className="size-3.5 text-(--type-color)"
                 />
               ))}
             </div>

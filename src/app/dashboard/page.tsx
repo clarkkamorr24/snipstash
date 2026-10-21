@@ -1,30 +1,25 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { ChevronRightIcon } from "lucide-react";
 
-import { CollectionCard } from "@/components/dashboard/CollectionCard";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
+import { DashboardStatsSection } from "@/components/dashboard/DashboardStatsSection";
 import { ItemGrid } from "@/components/dashboard/ItemGrid";
-import { StatsCards } from "@/components/dashboard/StatsCards";
 import {
-  getDashboardStats,
-  getPinnedItems,
-  getRecentCollections,
-  getRecentItems,
-} from "@/lib/dashboard-data";
+  RecentCollections,
+  RecentCollectionsSkeleton,
+} from "@/components/dashboard/RecentCollections";
+import { StatsCardsSkeleton } from "@/components/dashboard/StatsCards";
+import { getPinnedItems, getRecentItems } from "@/lib/dashboard-data";
 import { currentUser } from "@/lib/mock-data";
 
 export const metadata: Metadata = {
   title: "Dashboard",
 };
 
-const DASHBOARD_COLLECTIONS_LIMIT = 4;
-
 export default function DashboardPage() {
   const firstName = currentUser.name.split(" ")[0];
-  const recentCollections = getRecentCollections({
-    limit: DASHBOARD_COLLECTIONS_LIMIT,
-  });
 
   return (
     <div className="mx-auto max-w-6xl space-y-10 pb-6">
@@ -37,7 +32,9 @@ export default function DashboardPage() {
         </p>
       </header>
 
-      <StatsCards stats={getDashboardStats()} />
+      <Suspense fallback={<StatsCardsSkeleton />}>
+        <DashboardStatsSection />
+      </Suspense>
 
       <DashboardSection
         title="Recent collections"
@@ -52,11 +49,9 @@ export default function DashboardPage() {
           </Link>
         }
       >
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {recentCollections.map((collection) => (
-            <CollectionCard key={collection.id} collection={collection} />
-          ))}
-        </div>
+        <Suspense fallback={<RecentCollectionsSkeleton />}>
+          <RecentCollections />
+        </Suspense>
       </DashboardSection>
 
       <DashboardSection
