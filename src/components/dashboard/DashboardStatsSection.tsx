@@ -1,11 +1,16 @@
 import { connection } from "next/server";
 
-import { StatsCards } from "@/components/dashboard/StatsCards";
-import { getDashboardStats } from "@/lib/dashboard-data";
-import { getCollectionStats, type CollectionStats } from "@/lib/db/collections";
+import {
+  StatsCards,
+  type DashboardStats,
+} from "@/components/dashboard/StatsCards";
+import { getCollectionStats } from "@/lib/db/collections";
+import { getItemStats } from "@/lib/db/items";
 import { getCurrentUserId } from "@/lib/db/users";
 
-const EMPTY_COLLECTION_STATS: CollectionStats = {
+const EMPTY_STATS: DashboardStats = {
+  totalItems: 0,
+  favoriteItems: 0,
   totalCollections: 0,
   favoriteCollections: 0,
 };
@@ -13,10 +18,12 @@ const EMPTY_COLLECTION_STATS: CollectionStats = {
 export async function DashboardStatsSection() {
   await connection();
   const userId = await getCurrentUserId();
-  const collectionStats = userId
-    ? await getCollectionStats(userId)
-    : EMPTY_COLLECTION_STATS;
+  if (!userId) return <StatsCards stats={EMPTY_STATS} />;
 
-  // Item stats stay on mock data until items move to the database.
-  return <StatsCards stats={{ ...getDashboardStats(), ...collectionStats }} />;
+  const [itemStats, collectionStats] = await Promise.all([
+    getItemStats(userId),
+    getCollectionStats(userId),
+  ]);
+
+  return <StatsCards stats={{ ...itemStats, ...collectionStats }} />;
 }

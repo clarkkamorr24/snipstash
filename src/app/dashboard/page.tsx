@@ -5,13 +5,19 @@ import { ChevronRightIcon } from "lucide-react";
 
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
 import { DashboardStatsSection } from "@/components/dashboard/DashboardStatsSection";
-import { ItemGrid } from "@/components/dashboard/ItemGrid";
 import {
   RecentCollections,
   RecentCollectionsSkeleton,
 } from "@/components/dashboard/RecentCollections";
+import {
+  PinnedItems,
+  PinnedItemsSkeleton,
+} from "@/components/dashboard/PinnedItems";
+import {
+  RecentItems,
+  RecentItemsSkeleton,
+} from "@/components/dashboard/RecentItems";
 import { StatsCardsSkeleton } from "@/components/dashboard/StatsCards";
-import { getPinnedItems, getRecentItems } from "@/lib/dashboard-data";
 import { currentUser } from "@/lib/mock-data";
 
 export const metadata: Metadata = {
@@ -54,18 +60,17 @@ export default function DashboardPage() {
         </Suspense>
       </DashboardSection>
 
-      <DashboardSection
-        title="Pinned items"
-        description="Your go-to items, always at the top."
-      >
-        <ItemGrid items={getPinnedItems()} emptyMessage="No pinned items yet." />
-      </DashboardSection>
+      <Suspense fallback={<PinnedItemsSkeleton />}>
+        <PinnedItems />
+      </Suspense>
 
       <DashboardSection
         title="Recent items"
         description="Pick up where you left off."
       >
-        <ItemGrid items={getRecentItems()} emptyMessage="No recent items yet." />
+        <Suspense fallback={<RecentItemsSkeleton />}>
+          <RecentItems />
+        </Suspense>
       </DashboardSection>
     </div>
   );
