@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
 const RECENT_COLLECTIONS_LIMIT = 6;
+const SIDEBAR_RECENT_COLLECTIONS_LIMIT = 5;
 
 const ITEM_TYPE_SELECT = {
   id: true,
@@ -25,6 +26,12 @@ export interface CollectionSummary {
   dominantType: CollectionItemType | null;
   // Distinct types in the collection, most common first.
   itemTypes: CollectionItemType[];
+}
+
+export interface SidebarCollections {
+  favorites: CollectionSummary[];
+  // Newest non-favorite collections; favorites already have their own list.
+  recent: CollectionSummary[];
 }
 
 export interface CollectionStats {
@@ -65,6 +72,40 @@ function getDominantType(
   return top?.type ?? defaultType;
 }
 
+const COLLECTION_SUMMARY_SELECT = {
+  id: true,
+  name: true,
+  description: true,
+  isFavorite: true,
+  defaultType: { select: ITEM_TYPE_SELECT },
+  items: {
+    select: { item: { select: { itemType: { select: ITEM_TYPE_SELECT } } } },
+  },
+} as const;
+
+interface CollectionRow {
+  id: string;
+  name: string;
+  description: string | null;
+  isFavorite: boolean;
+  defaultType: CollectionItemType | null;
+  items: { item: { itemType: CollectionItemType } }[];
+}
+
+function toCollectionSummary({
+  defaultType,
+  items,
+  ...collection
+}: CollectionRow): CollectionSummary {
+  const typeCounts = countItemTypes(items.map(({ item }) => item.itemType));
+  return {
+    ...collection,
+    itemCount: items.length,
+    dominantType: getDominantType(typeCounts, defaultType),
+    itemTypes: typeCounts.map(({ type }) => type),
+  };
+}
+
 export async function getRecentCollections(
   userId: string,
   limit = RECENT_COLLECTIONS_LIMIT
@@ -73,27 +114,31 @@ export async function getRecentCollections(
     where: { userId },
     orderBy: { createdAt: "desc" },
     take: limit,
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      isFavorite: true,
-      defaultType: { select: ITEM_TYPE_SELECT },
-      items: {
-        select: { item: { select: { itemType: { select: ITEM_TYPE_SELECT } } } },
-      },
-    },
+    select: COLLECTION_SUMMARY_SELECT,
   });
+  return collections.map(toCollectionSummary);
+}
 
-  return collections.map(({ defaultType, items, ...collection }) => {
-    const typeCounts = countItemTypes(items.map(({ item }) => item.itemType));
-    return {
-      ...collection,
-      itemCount: items.length,
-      dominantType: getDominantType(typeCounts, defaultType),
-      itemTypes: typeCounts.map(({ type }) => type),
-    };
-  });
+export async function getSidebarCollections(
+  userId: string
+): Promise<SidebarCollections> {
+  const [favorites, recent] = await Promise.all([
+    prisma.collection.findMany({
+      where: { userId, isFavorite: true },
+      orderBy: { name: "asc" },
+      select: COLLECTION_SUMMARY_SELECT,
+    }),
+    prisma.collection.findMany({
+      where: { userId, isFavorite: false },
+      orderBy: { createdAt: "desc" },
+      take: SIDEBAR_RECENT_COLLECTIONS_LIMIT,
+      select: COLLECTION_SUMMARY_SELECT,
+    }),
+  ]);
+  return {
+    favorites: favorites.map(toCollectionSummary),
+    recent: recent.map(toCollectionSummary),
+  };
 }
 
 export async function getCollectionStats(
