@@ -9,7 +9,11 @@ import {
   SidebarTypeNav,
   SidebarTypeNavSkeleton,
 } from "@/components/dashboard/SidebarTypeNav";
-import { SidebarUserMenu } from "@/components/dashboard/SidebarUserMenu";
+import {
+  SidebarUser,
+  SidebarUserSkeleton,
+} from "@/components/dashboard/SidebarUser";
+import { Logo } from "@/components/shared/Logo";
 import {
   Sidebar,
   SidebarContent,
@@ -17,18 +21,6 @@ import {
   SidebarHeader,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { currentUser } from "@/lib/mock-data";
-
-function Logo() {
-  return (
-    <span aria-hidden className="grid size-6 grid-cols-2 gap-0.5">
-      <span className="rounded-sm bg-blue-500" />
-      <span className="rounded-sm bg-violet-500" />
-      <span className="rounded-sm bg-amber-300" />
-      <span className="rounded-sm bg-emerald-500" />
-    </span>
-  );
-}
 
 export function AppSidebar() {
   return (
@@ -52,7 +44,9 @@ export function AppSidebar() {
         </Suspense>
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border">
-        <SidebarUserMenu user={currentUser} />
+        <Suspense fallback={<SidebarUserSkeleton />}>
+          <SidebarUser />
+        </Suspense>
       </SidebarFooter>
     </Sidebar>
   );
