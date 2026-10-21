@@ -1,50 +1,65 @@
-import Link from "next/link";
-import { SettingsIcon } from "lucide-react";
+"use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { startTransition } from "react";
+import Link from "next/link";
+import { ChevronsUpDownIcon, LogOutIcon, UserIcon } from "lucide-react";
+
+import { signOutUser } from "@/actions/auth";
+import { UserAvatar } from "@/components/shared/UserAvatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import type { MockUser } from "@/lib/mock-data";
+import type { SessionUser } from "@/types/auth";
 
 interface SidebarUserMenuProps {
-  user: MockUser;
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part.charAt(0))
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  user: SessionUser;
 }
 
 export function SidebarUserMenu({ user }: SidebarUserMenuProps) {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <SidebarMenuButton
-          size="lg"
-          tooltip={user.name}
-          render={<Link href="/settings" />}
-        >
-          <Avatar>
-            {user.image && <AvatarImage src={user.image} alt={user.name} />}
-            <AvatarFallback className="bg-primary/20 text-xs font-semibold text-primary">
-              {getInitials(user.name)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="grid flex-1 leading-tight">
-            <span className="truncate font-medium">{user.name}</span>
-            <span className="truncate text-xs text-muted-foreground">
-              {user.isPro ? "Pro plan" : "Free plan"}
-            </span>
-          </div>
-          <SettingsIcon className="ml-auto text-muted-foreground" />
-        </SidebarMenuButton>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <SidebarMenuButton
+                size="lg"
+                className="data-popup-open:bg-sidebar-accent data-popup-open:text-sidebar-accent-foreground"
+              />
+            }
+          >
+            <UserAvatar user={user} />
+            <div className="grid flex-1 text-left leading-tight">
+              <span className="truncate font-medium">{user.name ?? user.email}</span>
+              {user.name && user.email && (
+                <span className="truncate text-xs text-muted-foreground">
+                  {user.email}
+                </span>
+              )}
+            </div>
+            <ChevronsUpDownIcon className="ml-auto text-muted-foreground" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="top" className="min-w-56">
+            <DropdownMenuItem render={<Link href="/profile" />}>
+              <UserIcon />
+              Profile
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => startTransition(() => signOutUser())}>
+              <LogOutIcon />
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
   );

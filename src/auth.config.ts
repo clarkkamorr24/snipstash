@@ -10,6 +10,7 @@ export const credentialsFields = {
 // Edge-safe config shared with the proxy: no adapter or database access here.
 // The Credentials provider is a placeholder; auth.ts supplies the real authorize.
 export default {
+  pages: { signIn: "/sign-in" },
   providers: [
     GitHub,
     Credentials({ credentials: credentialsFields, authorize: () => null }),
