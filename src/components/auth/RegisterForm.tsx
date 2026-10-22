@@ -60,7 +60,7 @@ export function RegisterForm() {
       return;
     }
     // Stays pending while navigating away
-    router.push("/sign-in?registered=1");
+    router.push("/verify-email");
   }
 
   return (

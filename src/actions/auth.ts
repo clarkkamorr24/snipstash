@@ -1,11 +1,13 @@
 "use server";
 
-import { AuthError } from "next-auth";
+import { AuthError, CredentialsSignin } from "next-auth";
 import { z } from "zod";
 
 import { signIn, signOut } from "@/auth";
-import { signInSchema } from "@/lib/auth-schemas";
-import type { SignInState } from "@/types/auth";
+import { EMAIL_NOT_VERIFIED } from "@/lib/auth-errors";
+import { resendVerificationSchema, signInSchema } from "@/lib/auth-schemas";
+import { resendEmailVerification } from "@/lib/email-verification";
+import type { ResendVerificationState, SignInState } from "@/types/auth";
 
 const DEFAULT_REDIRECT = "/dashboard";
 
@@ -39,6 +41,13 @@ export async function signInWithCredentials(
     });
     return { success: true };
   } catch (error) {
+    if (error instanceof CredentialsSignin && error.code === EMAIL_NOT_VERIFIED) {
+      return {
+        success: false,
+        error: "Please verify your email before signing in. Check your inbox for the link.",
+        unverifiedEmail: parsed.data.email,
+      };
+    }
     if (error instanceof AuthError) {
       return {
         success: false,
@@ -50,6 +59,26 @@ export async function signInWithCredentials(
     }
     // signIn throws a redirect on success, which Next.js handles
     throw error;
+  }
+}
+
+// Always answers the same way, so it can't be used to check which emails exist.
+export async function resendVerificationEmail(
+  _prevState: ResendVerificationState,
+  formData: FormData,
+): Promise<ResendVerificationState> {
+  const parsed = resendVerificationSchema.safeParse({ email: formData.get("email") });
+  if (!parsed.success) return { success: false, error: "Invalid email" };
+
+  try {
+    await resendEmailVerification(parsed.data.email);
+    return {
+      success: true,
+      message: "If your account still needs verifying, a new link is on its way.",
+    };
+  } catch (error) {
+    console.error("Resending verification email failed:", error);
+    return { success: false, error: "Couldn't send the email. Please try again." };
   }
 }
 

@@ -3,6 +3,7 @@ import GitHub from "next-auth/providers/github";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import authConfig, { credentialsFields } from "@/auth.config";
+import { EmailNotVerifiedError } from "@/lib/auth-errors";
 import { signInSchema } from "@/lib/auth-schemas";
 import { getUserByEmail } from "@/lib/db/users";
 import { verifyPassword } from "@/lib/password";
@@ -37,6 +38,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const isValid = await verifyPassword(parsed.data.password, user.password);
         if (!isValid) return null;
+
+        // Checked after the password, so it doesn't reveal which emails are registered
+        if (!user.emailVerified) throw new EmailNotVerifiedError();
 
         return { id: user.id, name: user.name, email: user.email, image: user.image };
       },

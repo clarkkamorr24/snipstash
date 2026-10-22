@@ -17,7 +17,21 @@ export const getCurrentUserId = cache(async (): Promise<string | null> => {
 export function getUserByEmail(email: string) {
   return prisma.user.findUnique({
     where: { email },
-    select: { id: true, name: true, email: true, image: true, password: true },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      image: true,
+      password: true,
+      emailVerified: true,
+    },
+  });
+}
+
+export function markEmailVerified(email: string) {
+  return prisma.user.updateMany({
+    where: { email, emailVerified: null },
+    data: { emailVerified: new Date() },
   });
 }
 
