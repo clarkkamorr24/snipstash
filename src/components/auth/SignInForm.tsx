@@ -8,6 +8,7 @@ import { signInWithCredentials } from "@/actions/auth";
 import { CallbackUrlInput } from "@/components/auth/CallbackUrlInput";
 import { FormAlert } from "@/components/auth/FormAlert";
 import { FormField } from "@/components/auth/FormField";
+import { ResendVerificationForm } from "@/components/auth/ResendVerificationForm";
 import { Button } from "@/components/ui/button";
 import { signInSchema } from "@/lib/auth-schemas";
 import type { FieldErrors, SignInState } from "@/types/auth";
@@ -34,30 +35,38 @@ export function SignInForm() {
 
   const fieldErrors = clientErrors ?? state.fieldErrors;
 
+  const showServerError = !clientErrors && state.error;
+
+  // The resend form sits outside the sign-in form, since forms can't be nested.
   return (
-    <form method="post" onSubmit={handleSubmit} noValidate className="grid gap-4">
-      <Suspense fallback={null}>
-        <CallbackUrlInput />
-      </Suspense>
-      {!clientErrors && state.error && <FormAlert variant="error">{state.error}</FormAlert>}
-      <FormField
-        name="email"
-        label="Email"
-        type="email"
-        autoComplete="email"
-        placeholder="you@example.com"
-        errors={fieldErrors?.email}
-      />
-      <FormField
-        name="password"
-        label="Password"
-        type="password"
-        autoComplete="current-password"
-        errors={fieldErrors?.password}
-      />
-      <Button type="submit" size="lg" className="w-full" disabled={pending}>
-        {pending ? "Signing in..." : "Sign in"}
-      </Button>
-    </form>
+    <div className="grid gap-4">
+      {showServerError && <FormAlert variant="error">{state.error}</FormAlert>}
+      {showServerError && state.unverifiedEmail && (
+        <ResendVerificationForm key={state.unverifiedEmail} email={state.unverifiedEmail} />
+      )}
+      <form method="post" onSubmit={handleSubmit} noValidate className="grid gap-4">
+        <Suspense fallback={null}>
+          <CallbackUrlInput />
+        </Suspense>
+        <FormField
+          name="email"
+          label="Email"
+          type="email"
+          autoComplete="email"
+          placeholder="you@example.com"
+          errors={fieldErrors?.email}
+        />
+        <FormField
+          name="password"
+          label="Password"
+          type="password"
+          autoComplete="current-password"
+          errors={fieldErrors?.password}
+        />
+        <Button type="submit" size="lg" className="w-full" disabled={pending}>
+          {pending ? "Signing in..." : "Sign in"}
+        </Button>
+      </form>
+    </div>
   );
 }

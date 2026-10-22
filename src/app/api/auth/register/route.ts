@@ -3,6 +3,7 @@ import { z } from "zod";
 import { Prisma } from "@/generated/prisma/client";
 import { registerSchema } from "@/lib/auth-schemas";
 import { createUser, getUserByEmail } from "@/lib/db/users";
+import { sendEmailVerification } from "@/lib/email-verification";
 import { hashPassword } from "@/lib/password";
 
 const EMAIL_TAKEN_ERROR = "An account with this email already exists";
@@ -35,6 +36,12 @@ export async function POST(request: Request) {
     }
 
     const user = await createUser({ name, email, password: await hashPassword(password) });
+    try {
+      await sendEmailVerification(email);
+    } catch (error) {
+      // The account exists either way; signing in offers to resend the link
+      console.error("Sending verification email failed:", error);
+    }
     return NextResponse.json({ success: true, data: user }, { status: 201 });
   } catch (error) {
     // Another request registered the same email between the check and the insert
